@@ -1,0 +1,8 @@
+{{- $hostType := "host" -}}
+{{- $hwModel := output "sysctl" "-n" "hw.model" | trim -}}
+{{- if hasPrefix "VirtualMac" $hwModel -}}
+{{-   $hostType = "guest" -}}
+{{- end -}}
+
+[data]
+    host_type = {{ $hostType | quote }}

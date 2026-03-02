@@ -1,0 +1,37 @@
+#!/bin/zsh
+# Install dev tools via Homebrew
+
+set -euo pipefail
+
+# Ensure brew is on PATH
+if ! command -v brew &>/dev/null; then
+    if [[ -x "/opt/homebrew/bin/brew" ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [[ -x "/usr/local/bin/brew" ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+fi
+
+install_if_missing() {
+    local cmd="$1"
+    local pkg="${2:-$1}"
+    if ! command -v "$cmd" &>/dev/null; then
+        echo "Installing $pkg..."
+        brew install "$pkg"
+    fi
+}
+
+install_if_missing mise
+install_if_missing chezmoi
+install_if_missing starship
+install_if_missing tmux
+install_if_missing nvim neovim
+
+{{ if eq .host_type "guest" -}}
+if ! [ -d "/Applications/Visual Studio Code.app" ] && ! [ -d "$HOME/Applications/Visual Studio Code.app" ]; then
+    echo "Installing VS Code..."
+    brew install --cask visual-studio-code
+fi
+{{ end -}}
+
+echo "✓ Brew packages installed"
