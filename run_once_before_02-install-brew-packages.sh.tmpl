@@ -21,17 +21,32 @@ install_if_missing() {
     fi
 }
 
+install_cask_if_missing() {
+    local app_name="$1"
+    local cask="$2"
+    if ! [ -d "/Applications/${app_name}.app" ] && ! [ -d "$HOME/Applications/${app_name}.app" ]; then
+        echo "Installing $cask..."
+        brew install --cask "$cask"
+    fi
+}
+
+{{ if eq .host_type "host" -}}
+# Host packages
+install_if_missing nvim neovim
+install_if_missing openssl
+install_if_missing starship
+install_if_missing tart
+install_if_missing tmux
+install_if_missing git-credential-manager
+install_cask_if_missing "Google Chrome" google-chrome
+{{ else -}}
+# Guest packages
 install_if_missing mise
 install_if_missing chezmoi
 install_if_missing starship
 install_if_missing tmux
 install_if_missing nvim neovim
-
-{{ if eq .host_type "guest" -}}
-if ! [ -d "/Applications/Visual Studio Code.app" ] && ! [ -d "$HOME/Applications/Visual Studio Code.app" ]; then
-    echo "Installing VS Code..."
-    brew install --cask visual-studio-code
-fi
+install_cask_if_missing "Visual Studio Code" visual-studio-code
 {{ end -}}
 
 echo "✓ Brew packages installed"
