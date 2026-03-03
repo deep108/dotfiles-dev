@@ -1,16 +1,10 @@
 #!/bin/zsh
 # Install dev tools via Homebrew
+# Assumes Homebrew and chezmoi are already installed (via bootstrap.sh)
 
 set -euo pipefail
 
-# Ensure brew is on PATH
-if ! command -v brew &>/dev/null; then
-    if [[ -x "/opt/homebrew/bin/brew" ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
-    elif [[ -x "/usr/local/bin/brew" ]]; then
-        eval "$(/usr/local/bin/brew shellenv)"
-    fi
-fi
+eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
 
 install_if_missing() {
     local cmd="$1"
@@ -42,7 +36,6 @@ install_cask_if_missing "Google Chrome" google-chrome
 {{ else -}}
 # Guest packages
 install_if_missing mise
-install_if_missing chezmoi
 install_if_missing starship
 install_if_missing tmux
 install_if_missing nvim neovim

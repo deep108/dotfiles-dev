@@ -1,0 +1,94 @@
+#!/bin/zsh
+# Check for updates on brew-managed dev tools
+# Auto-updating tools (Claude Code, Google Chrome) are skipped
+
+set -euo pipefail
+
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+# Ensure brew is on PATH
+if ! command -v brew &>/dev/null; then
+    if [[ -x "/opt/homebrew/bin/brew" ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [[ -x "/usr/local/bin/brew" ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+fi
+
+{{ if eq .host_type "host" -}}
+FORMULAE=(chezmoi neovim openssl starship tart tmux)
+CASKS=(git-credential-manager)
+{{ else -}}
+FORMULAE=(mise chezmoi starship tmux neovim)
+CASKS=(visual-studio-code)
+{{ end -}}
+
+echo -e "${BLUE}Checking for outdated packages...${NC}"
+brew update --quiet
+
+# Collect outdated formulae
+outdated=()
+while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    pkg=$(echo "$line" | awk '{print $1}')
+    for f in "${FORMULAE[@]}"; do
+        if [[ "$pkg" == "$f" ]]; then
+            outdated+=("$line")
+            break
+        fi
+    done
+done <<< "$(brew outdated --verbose 2>/dev/null)"
+
+# Collect outdated casks
+while IFS= read -r line; do
+    [[ -z "$line" ]] && continue
+    pkg=$(echo "$line" | awk '{print $1}')
+    for c in "${CASKS[@]}"; do
+        if [[ "$pkg" == "$c" ]]; then
+            outdated+=("cask:$line")
+            break
+        fi
+    done
+done <<< "$(brew outdated --cask --verbose 2>/dev/null)"
+
+if [[ ${#outdated[@]} -eq 0 ]]; then
+    echo -e "${GREEN}✓${NC} All packages are up to date"
+    exit 0
+fi
+
+echo -e "${YELLOW}${#outdated[@]} package(s) have updates available:${NC}"
+echo ""
+
+for entry in "${outdated[@]}"; do
+    if [[ "$entry" == cask:* ]]; then
+        entry="${entry#cask:}"
+        pkg=$(echo "$entry" | awk '{print $1}')
+        echo -e "  ${BLUE}${entry}${NC} (cask)"
+
+        printf "  Update %s? [y/N] " "$pkg"
+        read -r answer < /dev/tty || true
+        if [[ "${answer:-N}" =~ ^[Yy]$ ]]; then
+            brew upgrade --cask "$pkg"
+        fi
+    else
+        pkg=$(echo "$entry" | awk '{print $1}')
+        echo -e "  ${BLUE}${entry}${NC}"
+
+        if [[ "$pkg" == "tmux" ]] && [[ -n "${TMUX:-}" ]]; then
+            echo -e "  ${YELLOW}!${NC} Skipping tmux (running inside tmux session)"
+            continue
+        fi
+
+        printf "  Update %s? [y/N] " "$pkg"
+        read -r answer < /dev/tty || true
+        if [[ "${answer:-N}" =~ ^[Yy]$ ]]; then
+            brew upgrade "$pkg"
+        fi
+    fi
+done
+
+echo ""
+echo -e "${GREEN}✓${NC} Done"
