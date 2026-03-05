@@ -1,0 +1,3 @@
+{{ if eq .host_type "host" }}
+.vscode/data/User/settings.json
+{{ end }}
