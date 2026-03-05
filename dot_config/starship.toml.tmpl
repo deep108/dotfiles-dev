@@ -1,0 +1,17 @@
+{{ if eq .host_type "guest" -}}
+format = """${custom.vmname}\
+$directory\
+$git_branch\
+$git_status\
+$cmd_duration\
+$line_break\
+$character"""
+
+[custom.vmname]
+command = "scutil --get ComputerName"
+when = true
+style = "bg:#0d7377 fg:white bold"
+format = "[](fg:#0d7377)[ $output ]($style)[](fg:#0d7377) "
+{{ else -}}
+# Host — default starship prompt
+{{ end -}}
