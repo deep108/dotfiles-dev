@@ -11,7 +11,7 @@ $character"""
 command = "scutil --get ComputerName"
 when = true
 style = "bg:#0d7377 fg:white bold"
-format = "[](fg:#0d7377)[ $output ]($style)[](fg:#0d7377) "
+format = "[ $output ]($style)[](fg:#0d7377) "
 {{ else -}}
 # Host — default starship prompt
 {{ end -}}
