@@ -1,12 +1,14 @@
 #!/bin/zsh
 # Install dev tools
 # macOS: via Homebrew (assumes brew and chezmoi already installed via bootstrap.sh)
-# Linux: via apt + curl installers (assumes apt packages installed via bootstrap-linux.sh)
+# Linux: via apt + curl installers (assumes prerequisites installed via bootstrap-linux.sh)
 
 set -euo pipefail
 
 {{ if eq .chezmoi.os "linux" -}}
 # --- Linux (Debian) ---
+
+export PATH="$HOME/.local/bin:$PATH"
 
 install_if_missing() {
     local cmd="$1"
@@ -19,19 +21,34 @@ install_if_missing() {
 
 # Packages available via apt
 install_if_missing tmux
-# neovim is installed from GitHub releases by bootstrap-linux.sh (Debian's
-# apt version is too old for the vscode-neovim extension)
+install_if_missing jq
+sudo apt-get install -y -qq build-essential unzip
 
-# starship (not in Debian repos — installed by bootstrap-linux.sh to /usr/local/bin)
+# neovim (Debian Bookworm ships 0.7.2, vscode-neovim requires >= 0.9.0)
+if ! command -v nvim &>/dev/null; then
+    echo "Installing neovim from GitHub releases..."
+    curl -sL https://github.com/neovim/neovim/releases/latest/download/nvim-linux-arm64.tar.gz | sudo tar xzf - -C /usr/local --strip-components=1
+fi
+
+# starship (not in Debian repos)
 if ! command -v starship &>/dev/null; then
     echo "Installing starship..."
     curl -sS https://starship.rs/install.sh | sudo sh -s -- -y
 fi
 
-# mise (not in Debian repos — use official installer)
+# mise (not in Debian repos)
 if ! command -v mise &>/dev/null; then
     echo "Installing mise..."
     curl https://mise.run | sh
+fi
+
+# VS Code from Microsoft's apt repo
+if ! command -v code &>/dev/null; then
+    echo "Installing VS Code..."
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/packages.microsoft.gpg > /dev/null
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq code
 fi
 
 echo "✓ Linux packages installed"
