@@ -21,11 +21,10 @@ install_if_missing() {
 install_if_missing tmux
 install_if_missing nvim neovim
 
-# starship (not in Debian repos — use official installer)
+# starship (not in Debian repos — installed by bootstrap-linux.sh to /usr/local/bin)
 if ! command -v starship &>/dev/null; then
     echo "Installing starship..."
-    mkdir -p ~/.local/bin
-    curl -sS https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin
+    curl -sS https://starship.rs/install.sh | sudo sh -s -- -y
 fi
 
 # mise (not in Debian repos — use official installer)
