@@ -19,7 +19,8 @@ install_if_missing() {
 
 # Packages available via apt
 install_if_missing tmux
-install_if_missing nvim neovim
+# neovim is installed from GitHub releases by bootstrap-linux.sh (Debian's
+# apt version is too old for the vscode-neovim extension)
 
 # starship (not in Debian repos — installed by bootstrap-linux.sh to /usr/local/bin)
 if ! command -v starship &>/dev/null; then

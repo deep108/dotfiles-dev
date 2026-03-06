@@ -6,6 +6,6 @@
   "editor.minimap.enabled": false,
   "chat.commandCenter.enabled": false,
   "chat.enabled": false,
-  "vscode-neovim.neovimExecutablePaths.linux": "/usr/bin/nvim",
+  "vscode-neovim.neovimExecutablePaths.linux": "/usr/local/bin/nvim",
   "vscode-neovim.neovimExecutablePaths.darwin": "/opt/homebrew/bin/nvim"
 }
