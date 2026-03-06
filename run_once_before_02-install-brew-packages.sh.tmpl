@@ -24,7 +24,8 @@ install_if_missing nvim neovim
 # starship (not in Debian repos — use official installer)
 if ! command -v starship &>/dev/null; then
     echo "Installing starship..."
-    curl -sS https://starship.rs/install.sh | sh -s -- -y
+    mkdir -p ~/.local/bin
+    curl -sS https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin
 fi
 
 # mise (not in Debian repos — use official installer)
