@@ -8,10 +8,14 @@ $line_break\
 $character"""
 
 [custom.vmname]
+{{ if eq .chezmoi.os "darwin" -}}
 command = "scutil --get ComputerName"
+{{ else -}}
+command = "hostname"
+{{ end -}}
 when = true
 style = "bg:#0d7377 fg:white bold"
-format = "[ $output ]($style)[](fg:#0d7377) "
+format = "[ $output ]($style)[](fg:#0d7377) "
 {{ else -}}
 # Host — default starship prompt
 {{ end -}}

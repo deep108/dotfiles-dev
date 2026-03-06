@@ -1,3 +1,6 @@
 {{ if eq .host_type "host" }}
 .vscode/data/User/settings.json
 {{ end }}
+{{ if eq .chezmoi.os "linux" }}
+run_once_before_00-macos-defaults.sh
+{{ end }}

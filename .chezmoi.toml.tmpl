@@ -1,6 +1,10 @@
 {{- $hostType := "host" -}}
-{{- $hwModel := output "sysctl" "-n" "hw.model" | trim -}}
-{{- if hasPrefix "VirtualMac" $hwModel -}}
+{{- if eq .chezmoi.os "darwin" -}}
+{{-   $hwModel := output "sysctl" "-n" "hw.model" | trim -}}
+{{-   if hasPrefix "VirtualMac" $hwModel -}}
+{{-     $hostType = "guest" -}}
+{{-   end -}}
+{{- else if eq .chezmoi.os "linux" -}}
 {{-   $hostType = "guest" -}}
 {{- end -}}
 
