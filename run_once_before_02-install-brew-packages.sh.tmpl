@@ -1,61 +1,15 @@
 #!/bin/zsh
-# Install dev tools
-# macOS: via Homebrew (assumes brew and chezmoi already installed via bootstrap.sh)
-# Linux: via apt + curl installers (assumes prerequisites installed via bootstrap-linux.sh)
+# Install dev tools via Homebrew
+# macOS: assumes brew and chezmoi already installed via bootstrap.sh
+# Linux: assumes brew and chezmoi already installed via bootstrap-linux.sh
 
 set -euo pipefail
 
-{{ if eq .chezmoi.os "linux" -}}
-# --- Linux (Debian) ---
-
-export PATH="$HOME/.local/bin:$PATH"
-
-install_if_missing() {
-    local cmd="$1"
-    local pkg="${2:-$1}"
-    if ! command -v "$cmd" &>/dev/null; then
-        echo "Installing $pkg..."
-        sudo apt-get install -y -qq "$pkg"
-    fi
-}
-
-# Packages available via apt
-install_if_missing tmux
-install_if_missing jq
-sudo apt-get install -y -qq build-essential unzip
-
-# neovim (Debian Bookworm ships 0.7.2, vscode-neovim requires >= 0.9.0)
-if ! command -v nvim &>/dev/null; then
-    echo "Installing neovim from GitHub releases..."
-    curl -sL https://github.com/neovim/neovim/releases/latest/download/nvim-linux-arm64.tar.gz | sudo tar xzf - -C /usr/local --strip-components=1
-fi
-
-# starship (not in Debian repos)
-if ! command -v starship &>/dev/null; then
-    echo "Installing starship..."
-    curl -sS https://starship.rs/install.sh | sudo sh -s -- -y
-fi
-
-# mise (not in Debian repos)
-if ! command -v mise &>/dev/null; then
-    echo "Installing mise..."
-    curl https://mise.run | sh
-fi
-
-# VS Code from Microsoft's apt repo
-if ! command -v code &>/dev/null; then
-    echo "Installing VS Code..."
-    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/packages.microsoft.gpg > /dev/null
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
-    sudo apt-get update -qq
-    sudo apt-get install -y -qq code
-fi
-
-echo "✓ Linux packages installed"
-{{ else -}}
-# --- macOS ---
-
+{{ if eq .chezmoi.os "darwin" -}}
 eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
+{{ else if eq .chezmoi.os "linux" -}}
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+{{ end -}}
 
 install_if_missing() {
     local cmd="$1"
@@ -66,6 +20,7 @@ install_if_missing() {
     fi
 }
 
+{{ if eq .chezmoi.os "darwin" -}}
 install_cask_if_missing() {
     local app_name="$1"
     local cask="$2"
@@ -96,15 +51,39 @@ install_cask_if_missing "Google Chrome" google-chrome
 install_cask_if_missing "iTerm" iterm2
 install_font_if_missing "MesloLGMDZNerdFont-Regular.ttf" font-meslo-lg-nerd-font
 {{ else -}}
-# Guest packages
+# Guest packages (formulae)
 install_if_missing mise
 install_if_missing starship
 install_if_missing tmux
 install_if_missing nvim neovim
+install_if_missing jq
+# Guest packages (casks — macOS only)
 install_cask_if_missing "Visual Studio Code" visual-studio-code
 install_cask_if_missing "iTerm" iterm2
 install_font_if_missing "MesloLGMDZNerdFont-Regular.ttf" font-meslo-lg-nerd-font
 {{ end -}}
+{{ else if eq .chezmoi.os "linux" -}}
+# Guest packages (same brew formulae as macOS guest)
+install_if_missing mise
+install_if_missing starship
+install_if_missing tmux
+install_if_missing nvim neovim
+install_if_missing jq
+
+# VS Code from Microsoft's apt repo (Homebrew casks are macOS-only)
+if ! command -v code &>/dev/null; then
+    echo "Installing VS Code..."
+    wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/packages.microsoft.gpg > /dev/null
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" | sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
+    sudo apt-get update -qq
+    sudo apt-get install -y -qq code
+fi
+{{ end -}}
+
+# Verify mise installation
+if command -v mise &>/dev/null; then
+    echo "Running mise doctor..."
+    mise doctor || true
+fi
 
 echo "✓ Brew packages installed"
-{{ end -}}

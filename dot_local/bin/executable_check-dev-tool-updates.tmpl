@@ -15,6 +15,8 @@ if ! command -v brew &>/dev/null; then
         eval "$(/opt/homebrew/bin/brew shellenv)"
     elif [[ -x "/usr/local/bin/brew" ]]; then
         eval "$(/usr/local/bin/brew shellenv)"
+    elif [[ -x "/home/linuxbrew/.linuxbrew/bin/brew" ]]; then
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
     fi
 fi
 
@@ -22,8 +24,12 @@ fi
 FORMULAE=(chezmoi neovim openssl starship tart tmux)
 CASKS=(git-credential-manager)
 {{ else -}}
-FORMULAE=(mise chezmoi starship tmux neovim)
+FORMULAE=(mise chezmoi starship tmux neovim jq)
+{{ if eq .chezmoi.os "darwin" -}}
 CASKS=(visual-studio-code)
+{{ else -}}
+CASKS=()
+{{ end -}}
 {{ end -}}
 
 echo -e "${BLUE}Checking for outdated packages...${NC}"

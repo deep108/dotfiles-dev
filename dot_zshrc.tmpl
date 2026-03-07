@@ -2,6 +2,8 @@ export PATH="$HOME/.local/bin:$PATH"
 {{ if eq .chezmoi.os "darwin" -}}
 export HOMEBREW_CASK_OPTS="--appdir=~/Applications"
 eval "$(/opt/homebrew/bin/brew shellenv)"
+{{ else if eq .chezmoi.os "linux" -}}
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 {{ end -}}
 eval "$(starship init zsh)"
 {{ if eq .host_type "guest" -}}
