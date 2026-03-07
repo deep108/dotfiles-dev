@@ -1,0 +1,75 @@
+# dotfiles-dev
+
+Chezmoi-managed dotfiles for macOS and Linux development environments. Used by both host machines and guest VMs (macOS and Linux/Debian).
+
+Source repo: `deep108/dotfiles-dev`
+
+## How It Works
+
+`chezmoi init --apply --force deep108/dotfiles-dev` is called by the bootstrap scripts in `deep108/vm-tools`. Chezmoi then handles all configuration and tool installation via templates and `run_once_before_` scripts.
+
+## Environment Detection
+
+`.chezmoi.toml.tmpl` sets `.host_type` automatically:
+- **macOS host**: `sysctl hw.model` does NOT start with `VirtualMac` → `host_type = "host"`
+- **macOS guest VM**: `sysctl hw.model` starts with `VirtualMac` → `host_type = "guest"`
+- **Linux**: always `host_type = "guest"`
+
+Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` / `guest`).
+
+## File Layout
+
+### Templates
+| File | Purpose |
+|------|---------|
+| `.chezmoi.toml.tmpl` | Auto-detect host vs guest, macOS vs Linux |
+| `.chezmoiignore` | Exclude VS Code settings from host machines |
+| `dot_zprofile.tmpl` | Login shell: Homebrew shellenv (macOS + Linux paths) |
+| `dot_zshrc.tmpl` | Interactive shell: brew, starship, mise (guest only), claude-named helper |
+| `dot_config/starship.toml.tmpl` | Guest: teal powerline badge with VM hostname; Host: default prompt |
+| `dot_claude/settings.json.tmpl` | Claude Code settings with platform-aware homeDir |
+
+### run_once Scripts (execute in order)
+| Script | What it does |
+|--------|-------------|
+| `run_once_before_00-macos-defaults.sh` | Key repeat settings (skips on Linux via `uname` check) |
+| `run_once_before_02-install-brew-packages.sh.tmpl` | Install tools via brew; VS Code via apt on Linux |
+| `run_once_before_03-install-claude-code.sh` | Install Claude Code CLI |
+| `run_once_before_04-install-vscode-extensions.sh.tmpl` | Install VS Code extensions (guest only) |
+
+### Static Files
+| File | Deployed to | Notes |
+|------|------------|-------|
+| `dot_vscode/data/User/settings.json` | `~/.vscode/data/User/settings.json` | Guest only (via .chezmoiignore) |
+| `dot_local/bin/executable_check-dev-tool-updates.tmpl` | `~/.local/bin/check-dev-tool-updates` | Interactive update checker |
+
+## Package Lists
+
+### Brew Formulae (both macOS and Linux guests)
+mise, starship, tmux, neovim, jq
+
+### Brew Casks (macOS guest only)
+Visual Studio Code, iTerm2, font-meslo-lg-nerd-font
+
+### Brew Formulae (macOS host only)
+neovim, openssl, starship, tart, tmux, git-credential-manager
+
+### Brew Casks (macOS host only)
+Google Chrome, iTerm2, font-meslo-lg-nerd-font
+
+### Linux-specific (via apt, in run_once_before_02)
+VS Code (from Microsoft's apt repo — brew casks are macOS-only)
+
+## Homebrew Paths
+
+- macOS: `/opt/homebrew/bin/brew` (Apple Silicon) or `/usr/local/bin/brew` (Intel)
+- Linux: `/home/linuxbrew/.linuxbrew/bin/brew`
+
+All shell configs and scripts handle both paths via templates or fallback detection.
+
+## Key Conventions
+
+- `run_once_before_00` uses a runtime `uname` check to skip on Linux (`.chezmoiignore` doesn't work for `run_once_` scripts)
+- `run_once_before_02` runs `mise --version` after installation as a sanity check (`mise doctor` warns about activation in non-interactive scripts)
+- chezmoi is installed by bootstrap (not by run_once scripts) — it's in `check-dev-tool-updates` but not in the install scripts
+- Auto-updating tools (Claude Code, Google Chrome, iTerm2) are excluded from `check-dev-tool-updates`
