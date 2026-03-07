@@ -82,8 +82,7 @@ fi
 
 # Verify mise installation
 if command -v mise &>/dev/null; then
-    echo "Running mise doctor..."
-    mise doctor || true
+    echo "mise $(mise --version 2>/dev/null | awk '{print $1}')"
 fi
 
 echo "✓ Brew packages installed"
