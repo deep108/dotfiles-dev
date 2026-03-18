@@ -2,4 +2,8 @@ CLAUDE.md
 README.md
 {{ if eq .host_type "host" }}
 .vscode/data/User/settings.json
+.claude/CLAUDE.md
+.claude/rules
+.codex
+.gemini
 {{ end }}

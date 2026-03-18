@@ -23,11 +23,13 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 | File | Purpose |
 |------|---------|
 | `.chezmoi.toml.tmpl` | Auto-detect host vs guest, macOS vs Linux |
-| `.chezmoiignore` | Exclude VS Code settings from host machines |
+| `.chezmoiignore` | Exclude VS Code settings + agent configs from host machines |
 | `dot_zprofile.tmpl` | Login shell: Homebrew shellenv (macOS + Linux paths) |
 | `dot_zshrc.tmpl` | Interactive shell: brew, starship, mise (guest only), claude-named helper |
 | `dot_config/starship.toml.tmpl` | Guest: teal powerline badge with VM hostname; Host: default prompt |
 | `dot_claude/settings.json.tmpl` | Claude Code settings with platform-aware homeDir |
+| `dot_claude/CLAUDE.md` | Shared agent instructions (mise + port 18000), guest only |
+| `dot_claude/rules/vm-environment.md` | Glob-scoped rules for config/infra files, guest only |
 
 ### run_once Scripts (execute in order)
 | Script | What it does |
@@ -42,11 +44,16 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 |------|------------|-------|
 | `dot_vscode/data/User/settings.json` | `~/.vscode/data/User/settings.json` | Guest only (via .chezmoiignore) |
 | `dot_local/bin/executable_check-dev-tool-updates.tmpl` | `~/.local/bin/check-dev-tool-updates` | Interactive update checker |
+| `dot_codex/symlink_AGENTS.md` | `~/.codex/AGENTS.md` | Symlink to `~/.claude/CLAUDE.md`, guest only |
+| `dot_gemini/symlink_GEMINI.md` | `~/.gemini/GEMINI.md` | Symlink to `~/.claude/CLAUDE.md`, guest only |
 
 ## Package Lists
 
 ### Brew Formulae (both macOS and Linux guests)
-mise, starship, tmux, neovim, jq
+mise, starship, tmux, neovim, jq, wget, tree, htop, watch
+
+### Brew over OS (both guests — newer versions than OS ships)
+curl, openssl, git, rsync
 
 ### Brew Casks (macOS guest only)
 Visual Studio Code, iTerm2, font-meslo-lg-nerd-font
@@ -70,6 +77,7 @@ All shell configs and scripts handle both paths via templates or fallback detect
 ## Key Conventions
 
 - `run_once_before_00` uses a runtime `uname` check to skip on Linux (`.chezmoiignore` doesn't work for `run_once_` scripts)
+- `run_once_before_02` uses `install_or_upgrade` (checks `brew list` not `command -v`) for brew-over-OS tools so brew version gets installed even when OS version exists
 - `run_once_before_02` runs `mise --version` after installation as a sanity check (`mise doctor` warns about activation in non-interactive scripts)
 - chezmoi is installed by bootstrap (not by run_once scripts) — it's in `check-dev-tool-updates` but not in the install scripts
 - Auto-updating tools (Claude Code, Google Chrome, iTerm2) are excluded from `check-dev-tool-updates`
