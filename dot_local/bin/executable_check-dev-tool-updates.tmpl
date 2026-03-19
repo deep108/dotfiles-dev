@@ -26,7 +26,7 @@ CASKS=(git-credential-manager)
 {{ else -}}
 FORMULAE=(mise chezmoi starship tmux neovim jq wget tree htop watch curl openssl git rsync)
 {{ if eq .chezmoi.os "darwin" -}}
-CASKS=(visual-studio-code)
+CASKS=(visual-studio-code android-studio)
 {{ else -}}
 CASKS=()
 {{ end -}}
