@@ -1,0 +1,23 @@
+#!/bin/zsh
+# Install OpenAI Codex CLI if not present
+
+set -euo pipefail
+
+{{ if eq .chezmoi.os "darwin" -}}
+eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
+{{ else if eq .chezmoi.os "linux" -}}
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+{{ end -}}
+
+if ! command -v codex &>/dev/null; then
+    echo "Installing Codex CLI..."
+    brew install codex
+fi
+
+if command -v codex &>/dev/null; then
+    codex_version=$(codex --version 2>/dev/null | awk 'NR==1' || echo "unknown")
+    echo "✓ Codex CLI ($codex_version)"
+else
+    echo "⚠ Codex CLI not available"
+    echo "  Install manually later: brew install codex"
+fi

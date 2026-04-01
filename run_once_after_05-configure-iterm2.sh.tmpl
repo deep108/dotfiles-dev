@@ -1,0 +1,35 @@
+#!/bin/zsh
+# Configure iTerm2 settings (macOS only)
+# On guest VMs, provision-vm.sh handles this post-reboot instead (needs GUI session).
+
+set -euo pipefail
+
+{{ if and (eq .chezmoi.os "darwin") (eq .host_type "host") -}}
+PLIST="$HOME/Library/Preferences/com.googlecode.iterm2.plist"
+
+# If iTerm2 hasn't been launched yet, launch it briefly to generate default prefs
+if [[ ! -f "$PLIST" ]]; then
+    echo "  Launching iTerm2 to generate default preferences..."
+    open -a iTerm
+    WAIT=0
+    while [[ ! -f "$PLIST" ]]; do
+        if [[ $WAIT -ge 30 ]]; then
+            echo "✗ Timed out waiting for iTerm2 plist"
+            osascript -e 'quit app "iTerm"' 2>/dev/null || true
+            exit 1
+        fi
+        sleep 1
+        WAIT=$((WAIT + 1))
+    done
+    sleep 2  # let iTerm2 finish writing defaults
+    osascript -e 'quit app "iTerm"'
+    sleep 1
+fi
+
+# Set default profile font to MesloLGMDZ Nerd Font Mono
+/usr/libexec/PlistBuddy -c "Set ':New Bookmarks':0:'Normal Font' 'MesloLGMDZNFM-Regular 12'" "$PLIST"
+
+echo "✓ iTerm2 configured (font: MesloLGMDZ Nerd Font Mono 12)"
+{{ else -}}
+# Guest or Linux — nothing to configure (guest handled by provision-vm.sh)
+{{ end -}}
