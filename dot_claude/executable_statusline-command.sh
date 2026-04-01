@@ -4,6 +4,8 @@ input=$(cat)
 cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // empty')
 model=$(echo "$input" | jq -r '.model.display_name // empty')
 remaining=$(echo "$input" | jq -r '.context_window.remaining_percentage // empty')
+five_hour_used=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty')
+seven_day_used=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty')
 
 # ANSI colors (dim-friendly, mirrors Starship default palette)
 CYAN='\033[36m'
@@ -55,7 +57,41 @@ hostname=$(hostname -s 2>/dev/null)
 model_part=""
 [ -n "$model" ] && model_part="${CYAN}${model}${RESET}"
 
-# Assemble: "hostname  ~/path/to/dir  on  main [!]  Claude Sonnet 4.6  ctx: 87%"
+# Rate limit usage (5-hour and 7-day); only present for subscribers after first API call
+rate_part=""
+if [ -n "$five_hour_used" ] || [ -n "$seven_day_used" ]; then
+    rate_pieces=""
+    if [ -n "$five_hour_used" ]; then
+        fh_int=$(printf "%.0f" "$five_hour_used")
+        if [ "$fh_int" -ge 80 ]; then
+            fh_color="$RED"
+        elif [ "$fh_int" -ge 50 ]; then
+            fh_color="$YELLOW"
+        else
+            fh_color="$GREEN"
+        fi
+        rate_pieces="${fh_color}5h:${fh_int}%${RESET}"
+    fi
+    if [ -n "$seven_day_used" ]; then
+        sd_int=$(printf "%.0f" "$seven_day_used")
+        if [ "$sd_int" -ge 80 ]; then
+            sd_color="$RED"
+        elif [ "$sd_int" -ge 50 ]; then
+            sd_color="$YELLOW"
+        else
+            sd_color="$GREEN"
+        fi
+        sd_piece="${sd_color}7d:${sd_int}%${RESET}"
+        if [ -n "$rate_pieces" ]; then
+            rate_pieces="${rate_pieces} ${sd_piece}"
+        else
+            rate_pieces="$sd_piece"
+        fi
+    fi
+    rate_part="$rate_pieces"
+fi
+
+# Assemble: "hostname  ~/path/to/dir  on  main [!]  Claude Sonnet 4.6  ctx: 87%  5h:23% 7d:45%"
 # Mirrors Starship default layout: hostname, directory, git branch+status, extras
 line=""
 [ -n "$host_part" ] && line="${host_part}  "
@@ -64,5 +100,6 @@ line="${line}${BOLD}${CYAN}${short_cwd}${RESET}"
 [ -n "$git_part" ]   && line="${line}  ${git_part}"
 [ -n "$model_part" ] && line="${line}  ${model_part}"
 [ -n "$ctx_part" ]   && line="${line}  ${ctx_part}"
+[ -n "$rate_part" ]  && line="${line}  ${rate_part}"
 
 printf "%b\n" "$line"
