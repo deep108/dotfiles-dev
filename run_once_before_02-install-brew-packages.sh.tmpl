@@ -75,6 +75,8 @@ install_or_upgrade curl
 install_or_upgrade openssl
 install_or_upgrade git
 install_or_upgrade rsync
+install_or_upgrade zip
+install_or_upgrade unzip
 # Guest packages (casks — macOS only)
 install_cask_if_missing "Visual Studio Code" visual-studio-code
 install_cask_if_missing "iTerm" iterm2
@@ -96,6 +98,8 @@ install_or_upgrade curl
 install_or_upgrade openssl
 install_or_upgrade git
 install_or_upgrade rsync
+install_or_upgrade zip
+install_or_upgrade unzip
 
 # VS Code from Microsoft's apt repo (Homebrew casks are macOS-only)
 if ! command -v code &>/dev/null; then

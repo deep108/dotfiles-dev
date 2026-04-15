@@ -24,7 +24,7 @@ fi
 FORMULAE=(chezmoi neovim openssl starship tart tmux)
 CASKS=(git-credential-manager)
 {{ else -}}
-FORMULAE=(mise chezmoi starship tmux neovim jq wget tree htop watch curl openssl git rsync)
+FORMULAE=(mise chezmoi starship tmux neovim jq wget tree htop watch curl openssl git rsync zip unzip)
 {{ if eq .chezmoi.os "darwin" -}}
 CASKS=(visual-studio-code android-studio)
 {{ else -}}
