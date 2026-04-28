@@ -35,11 +35,11 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 | Script | What it does |
 |--------|-------------|
 | `run_once_before_00-macos-defaults.sh` | Key repeat settings (skips on Linux via `uname` check) |
-| `run_onchange_before_02-install-brew-packages.sh.tmpl` | Install tools via brew (incl. diff tooling, age, kamal toolchain on Linux); VS Code via apt on Linux; mise install for Linux global tools |
+| `run_onchange_before_02-install-brew-packages.sh.tmpl` | Install tools via brew (incl. diff tooling, age, kamal toolchain on Linux); VS Code via apt on Linux |
 | `run_once_before_03-install-claude-code.sh` | Install Claude Code CLI |
 | `run_once_before_03b-install-codex.sh.tmpl` | Install Codex CLI via brew |
 | `run_once_before_04-install-vscode-extensions.sh.tmpl` | Install VS Code extensions (guest only) |
-| `run_onchange_before_05-install-kamal.sh.tmpl` | Install pinned Kamal version as user gem (Linux guest only) |
+| `run_onchange_before_05-install-kamal.sh.tmpl` | Configure mise for precompiled Ruby + add Ruby to global mise config + install pinned Kamal as user gem (Linux guest only). Uses `mise use -g` so it preserves existing Java entry from Android setup. |
 | `run_onchange_before_06-configure-git-delta.sh.tmpl` | Configure git to use delta as pager + diff filter |
 
 `run_onchange_` prefix means the script re-runs whenever its contents change (e.g. when adding a brew package or bumping the kamal version pin). `run_once_` runs exactly once per VM.
@@ -75,8 +75,8 @@ Google Chrome, iTerm2, font-meslo-lg-nerd-font
 ### Linux-specific (via apt, in run_onchange_before_02)
 VS Code (from Microsoft's apt repo — brew casks are macOS-only)
 
-### Mise-managed Runtimes (Linux guest only — global config in `~/.config/mise/config.toml`)
-ruby (3.4 with `compile = false` for precompiled binaries)
+### Mise-managed Runtimes (Linux guest only)
+ruby (3.4) — added to global mise config by `run_onchange_before_05` via `mise use -g ruby@3.4`. The `ruby.compile = false` setting is set via `mise settings set` in the same script. Java (added by `provision-vm.sh --android`) coexists in the same global config.
 
 ### User Gems (Linux guest only — installed via `gem install --user-install`)
 kamal (pinned in `run_onchange_before_05`)
@@ -92,7 +92,7 @@ All shell configs and scripts handle both paths via templates or fallback detect
 
 - `run_once_before_00` uses a runtime `uname` check to skip on Linux (`.chezmoiignore` doesn't work for `run_*_` scripts)
 - `run_onchange_before_02` uses `install_or_upgrade` (checks `brew list` not `command -v`) for brew-over-OS tools so brew version gets installed even when OS version exists
-- `run_onchange_before_02` runs `mise install` after brew installs (Linux only) to materialize runtimes from `~/.config/mise/config.toml`
+- mise global config (`~/.config/mise/config.toml`) is NOT chezmoi-managed — chezmoi would clobber whatever's already there (e.g. Java from Android setup). Mise mutations are done via the `mise use -g` and `mise settings set` CLI commands (in `run_onchange_before_05`), which are additive.
 - chezmoi is installed by bootstrap (not by run_once scripts) — it's in `check-dev-tool-updates` but not in the install scripts
 - Auto-updating tools (Claude Code, Google Chrome, iTerm2) are excluded from `check-dev-tool-updates`
 - Kamal install (`run_onchange_before_05`) is gated on `.chezmoi.os == "linux"` and `.host_type == "guest"` — exits cleanly otherwise. Tart macOS guests can't run Docker so deploys come from Linux guests only.

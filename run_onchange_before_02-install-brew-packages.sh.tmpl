@@ -114,12 +114,6 @@ install_or_upgrade rsync
 install_or_upgrade zip
 install_or_upgrade unzip
 
-# Install language runtimes from mise global config (precompiled binaries)
-if [ -f "$HOME/.config/mise/config.toml" ]; then
-    echo "Installing mise tools from global config..."
-    mise install
-fi
-
 # VS Code from Microsoft's apt repo (Homebrew casks are macOS-only)
 if ! command -v code &>/dev/null; then
     echo "Installing VS Code..."

@@ -1,6 +1,7 @@
 #!/bin/zsh
-# Install Kamal deploy CLI as a user-install Ruby gem (Linux guest only)
-# Depends on Ruby being installed first via mise (run_onchange_before_02 runs `mise install`)
+# Install Ruby (via mise) and the Kamal deploy CLI (Linux guest only).
+# Uses mise CLI commands so it adds to whatever's already in the global
+# config (e.g. Java for Android) rather than clobbering it.
 
 set -euo pipefail
 
@@ -16,15 +17,22 @@ exit 0
 
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
+RUBY_VERSION="3.4"
 KAMAL_VERSION="2.11.0"
 
 if ! command -v mise &>/dev/null; then
-    echo "⚠ mise not found — skipping Kamal install"
+    echo "⚠ mise not found — skipping Ruby/Kamal install"
     exit 0
 fi
 
-# Make sure Ruby is materialized before installing the gem
-mise install ruby
+# Opt into precompiled Ruby binaries (becomes default in mise 2026.8.0).
+# Using `mise settings set` rather than writing to a TOML file so we don't
+# care about the exact storage format mise uses.
+mise settings set ruby.compile false
+
+# Add ruby to the global mise config (additive — preserves existing entries
+# like Java) and install it. `mise use -g` triggers install if not present.
+mise use -g "ruby@${RUBY_VERSION}"
 
 # Check if kamal is already installed at the pinned version
 if command -v kamal &>/dev/null; then
@@ -47,5 +55,5 @@ done
 if command -v kamal &>/dev/null; then
     echo "✓ Kamal $(kamal version 2>/dev/null)"
 else
-    echo "⚠ Kamal not on PATH — verify ~/.gem/.../bin is in zprofile"
+    echo "⚠ Kamal not on PATH — verify ~/.gem/.../bin is in zprofile (run: exec zsh -l)"
 fi
