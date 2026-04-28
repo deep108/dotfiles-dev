@@ -8,6 +8,14 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 eval "$(starship init zsh)"
 {{ if eq .host_type "guest" -}}
 eval "$(mise activate zsh)"
+{{ if eq .chezmoi.os "linux" -}}
+# Ruby user-install gems (kamal, etc.) — Ruby is on PATH after mise activate.
+# Mise-installed Ruby uses XDG dir: ~/.local/share/gem/ruby/<minor>.0/bin
+if command -v ruby &>/dev/null; then
+    GEM_USER_BIN="$(ruby -e 'puts Gem.user_dir' 2>/dev/null)/bin"
+    [[ -d "$GEM_USER_BIN" ]] && export PATH="$GEM_USER_BIN:$PATH"
+fi
+{{ end -}}
 {{ end -}}
 
 # Launch Claude Code with an iTerm2 badge label for easy identification
