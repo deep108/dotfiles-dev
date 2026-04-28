@@ -6,4 +6,8 @@ README.md
 .claude/rules
 .codex
 .gemini
+.config/mise
+{{ end }}
+{{ if and (eq .host_type "guest") (ne .chezmoi.os "linux") }}
+.config/mise
 {{ end }}

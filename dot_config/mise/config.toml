@@ -1,0 +1,12 @@
+# Global mise config — language runtimes installed on every Linux guest VM
+# Project-level pinning lives in each repo's .mise.toml or .tool-versions
+
+[tools]
+# Ruby for kamal deploy CLI (and general Ruby dev)
+ruby = "3.4"
+
+[settings.ruby]
+# Use precompiled binaries from jdx/ruby release, not source compile.
+# Becomes the default in mise 2026.8.0; we pin it explicitly so we don't
+# depend on the default flipping at some future version.
+compile = false

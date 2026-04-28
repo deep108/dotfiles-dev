@@ -1,0 +1,26 @@
+#!/bin/zsh
+# Configure git to use delta as the pager and diff filter.
+# Idempotent and additive — sets only delta-related keys.
+# User identity (name/email) and other preferences are managed elsewhere.
+
+set -euo pipefail
+
+{{ if eq .chezmoi.os "darwin" -}}
+eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
+{{ else if eq .chezmoi.os "linux" -}}
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+{{ end -}}
+
+if ! command -v delta &>/dev/null; then
+    echo "⚠ delta not on PATH — skipping git delta config"
+    exit 0
+fi
+
+git config --global core.pager "delta"
+git config --global interactive.diffFilter "delta --color-only"
+git config --global delta.navigate true
+git config --global delta.side-by-side true
+git config --global delta.line-numbers true
+git config --global merge.conflictStyle zdiff3
+
+echo "✓ Configured git to use delta"

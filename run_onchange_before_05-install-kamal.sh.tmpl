@@ -1,0 +1,51 @@
+#!/bin/zsh
+# Install Kamal deploy CLI as a user-install Ruby gem (Linux guest only)
+# Depends on Ruby being installed first via mise (run_onchange_before_02 runs `mise install`)
+
+set -euo pipefail
+
+{{ if ne .chezmoi.os "linux" -}}
+# macOS guests can't run Docker for deploys, so we skip Kamal there.
+exit 0
+{{ end -}}
+
+{{ if ne .host_type "guest" -}}
+# Hosts don't deploy.
+exit 0
+{{ end -}}
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+KAMAL_VERSION="2.11.0"
+
+if ! command -v mise &>/dev/null; then
+    echo "⚠ mise not found — skipping Kamal install"
+    exit 0
+fi
+
+# Make sure Ruby is materialized before installing the gem
+mise install ruby
+
+# Check if kamal is already installed at the pinned version
+if command -v kamal &>/dev/null; then
+    current=$(kamal version 2>/dev/null || echo "")
+    if [[ "$current" == "$KAMAL_VERSION" ]]; then
+        echo "✓ Kamal $current"
+        exit 0
+    fi
+fi
+
+echo "Installing Kamal $KAMAL_VERSION..."
+for attempt in 1 2 3; do
+    if mise exec ruby -- gem install --user-install kamal -v "$KAMAL_VERSION"; then
+        break
+    fi
+    echo "  Attempt $attempt failed, retrying..."
+    sleep 2
+done
+
+if command -v kamal &>/dev/null; then
+    echo "✓ Kamal $(kamal version 2>/dev/null)"
+else
+    echo "⚠ Kamal not on PATH — verify ~/.gem/.../bin is in zprofile"
+fi

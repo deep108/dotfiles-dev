@@ -70,6 +70,11 @@ install_if_missing wget
 install_if_missing tree
 install_if_missing htop
 install_if_missing watch
+# Diff/review tooling
+install_if_missing delta git-delta
+install_if_missing tig
+install_if_missing difft difftastic
+install_if_missing age
 # Brew over OS — install newer versions than macOS ships
 install_or_upgrade curl
 install_or_upgrade openssl
@@ -93,6 +98,14 @@ install_if_missing wget
 install_if_missing tree
 install_if_missing htop
 install_if_missing watch
+# Diff/review tooling
+install_if_missing delta git-delta
+install_if_missing tig
+install_if_missing difft difftastic
+install_if_missing age
+# Kamal toolchain (Linux guest only — Tart macOS guests can't run Docker for deploys)
+install_if_missing docker
+install_if_missing buildx docker-buildx
 # Brew over OS — install newer versions than Debian ships
 install_or_upgrade curl
 install_or_upgrade openssl
@@ -100,6 +113,12 @@ install_or_upgrade git
 install_or_upgrade rsync
 install_or_upgrade zip
 install_or_upgrade unzip
+
+# Install language runtimes from mise global config (precompiled binaries)
+if [ -f "$HOME/.config/mise/config.toml" ]; then
+    echo "Installing mise tools from global config..."
+    mise install
+fi
 
 # VS Code from Microsoft's apt repo (Homebrew casks are macOS-only)
 if ! command -v code &>/dev/null; then

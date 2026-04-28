@@ -11,5 +11,10 @@ eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
 export ANDROID_HOME="$HOME/Android/Sdk"
 [[ -d "$ANDROID_HOME/platform-tools" ]] && export PATH="$ANDROID_HOME/platform-tools:$PATH"
 [[ -d "$ANDROID_HOME/emulator" ]] && export PATH="$ANDROID_HOME/emulator:$PATH"
+# Ruby user-install gems (kamal, etc.) — let Ruby itself report the right path
+if command -v ruby &>/dev/null; then
+    GEM_USER_BIN="$(ruby -e 'puts Gem.user_dir' 2>/dev/null)/bin"
+    [[ -d "$GEM_USER_BIN" ]] && export PATH="$GEM_USER_BIN:$PATH"
+fi
 {{ end -}}
 {{ end -}}

@@ -31,13 +31,18 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 | `dot_claude/CLAUDE.md` | Shared agent instructions (mise + port 18000), guest only |
 | `dot_claude/rules/vm-environment.md` | Glob-scoped rules for config/infra files, guest only |
 
-### run_once Scripts (execute in order)
+### Provisioning Scripts (execute in order)
 | Script | What it does |
 |--------|-------------|
 | `run_once_before_00-macos-defaults.sh` | Key repeat settings (skips on Linux via `uname` check) |
-| `run_once_before_02-install-brew-packages.sh.tmpl` | Install tools via brew; VS Code via apt on Linux |
+| `run_onchange_before_02-install-brew-packages.sh.tmpl` | Install tools via brew (incl. diff tooling, age, kamal toolchain on Linux); VS Code via apt on Linux; mise install for Linux global tools |
 | `run_once_before_03-install-claude-code.sh` | Install Claude Code CLI |
+| `run_once_before_03b-install-codex.sh.tmpl` | Install Codex CLI via brew |
 | `run_once_before_04-install-vscode-extensions.sh.tmpl` | Install VS Code extensions (guest only) |
+| `run_onchange_before_05-install-kamal.sh.tmpl` | Install pinned Kamal version as user gem (Linux guest only) |
+| `run_onchange_before_06-configure-git-delta.sh.tmpl` | Configure git to use delta as pager + diff filter |
+
+`run_onchange_` prefix means the script re-runs whenever its contents change (e.g. when adding a brew package or bumping the kamal version pin). `run_once_` runs exactly once per VM.
 
 ### Static Files
 | File | Deployed to | Notes |
@@ -50,10 +55,13 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 ## Package Lists
 
 ### Brew Formulae (both macOS and Linux guests)
-mise, starship, tmux, neovim, jq, wget, tree, htop, watch
+mise, starship, tmux, neovim, jq, wget, tree, htop, watch, git-delta, tig, difftastic, age
+
+### Brew Formulae (Linux guests only — Kamal toolchain)
+docker, docker-buildx
 
 ### Brew over OS (both guests — newer versions than OS ships)
-curl, openssl, git, rsync
+curl, openssl, git, rsync, zip, unzip
 
 ### Brew Casks (macOS guest only)
 Visual Studio Code, iTerm2, font-meslo-lg-nerd-font
@@ -64,8 +72,14 @@ neovim, openssl, starship, tart, tmux, git-credential-manager
 ### Brew Casks (macOS host only)
 Google Chrome, iTerm2, font-meslo-lg-nerd-font
 
-### Linux-specific (via apt, in run_once_before_02)
+### Linux-specific (via apt, in run_onchange_before_02)
 VS Code (from Microsoft's apt repo — brew casks are macOS-only)
+
+### Mise-managed Runtimes (Linux guest only — global config in `~/.config/mise/config.toml`)
+ruby (3.4 with `compile = false` for precompiled binaries)
+
+### User Gems (Linux guest only — installed via `gem install --user-install`)
+kamal (pinned in `run_onchange_before_05`)
 
 ## Homebrew Paths
 
@@ -76,8 +90,9 @@ All shell configs and scripts handle both paths via templates or fallback detect
 
 ## Key Conventions
 
-- `run_once_before_00` uses a runtime `uname` check to skip on Linux (`.chezmoiignore` doesn't work for `run_once_` scripts)
-- `run_once_before_02` uses `install_or_upgrade` (checks `brew list` not `command -v`) for brew-over-OS tools so brew version gets installed even when OS version exists
-- `run_once_before_02` runs `mise --version` after installation as a sanity check (`mise doctor` warns about activation in non-interactive scripts)
+- `run_once_before_00` uses a runtime `uname` check to skip on Linux (`.chezmoiignore` doesn't work for `run_*_` scripts)
+- `run_onchange_before_02` uses `install_or_upgrade` (checks `brew list` not `command -v`) for brew-over-OS tools so brew version gets installed even when OS version exists
+- `run_onchange_before_02` runs `mise install` after brew installs (Linux only) to materialize runtimes from `~/.config/mise/config.toml`
 - chezmoi is installed by bootstrap (not by run_once scripts) — it's in `check-dev-tool-updates` but not in the install scripts
 - Auto-updating tools (Claude Code, Google Chrome, iTerm2) are excluded from `check-dev-tool-updates`
+- Kamal install (`run_onchange_before_05`) is gated on `.chezmoi.os == "linux"` and `.host_type == "guest"` — exits cleanly otherwise. Tart macOS guests can't run Docker so deploys come from Linux guests only.
