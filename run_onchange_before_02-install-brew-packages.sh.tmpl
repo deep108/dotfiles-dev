@@ -106,6 +106,11 @@ install_if_missing age
 # Kamal toolchain (Linux guest only — Tart macOS guests can't run Docker for deploys)
 install_if_missing docker
 install_if_missing buildx docker-buildx
+# Docker plugin discovery: docker only finds plugins in ~/.docker/cli-plugins/
+# (and a few system paths). Linuxbrew puts docker-buildx in its own prefix
+# which docker doesn't search, so symlink it into the discovery path.
+mkdir -p "$HOME/.docker/cli-plugins"
+ln -sf /home/linuxbrew/.linuxbrew/bin/docker-buildx "$HOME/.docker/cli-plugins/docker-buildx"
 # Brew over OS — install newer versions than Debian ships
 install_or_upgrade curl
 install_or_upgrade openssl
