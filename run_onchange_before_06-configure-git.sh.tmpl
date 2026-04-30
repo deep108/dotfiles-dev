@@ -1,0 +1,31 @@
+#!/bin/zsh
+# Configure git: general preferences and delta as pager.
+# Idempotent and additive — only sets specific keys, doesn't clobber other config.
+#
+# User identity (user.name, user.email) is propagated from the host by
+# provision-vm.sh during initial setup. Not managed here so dotfiles stay
+# portable across users.
+
+set -euo pipefail
+
+{{ if eq .chezmoi.os "darwin" -}}
+eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
+{{ else if eq .chezmoi.os "linux" -}}
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+{{ end -}}
+
+# --- General preferences ---------------------------------------------------
+git config --global pull.rebase true
+git config --global init.defaultBranch main
+git config --global merge.conflictStyle zdiff3
+
+# --- Delta pager + diff filter (only if delta is available) ---------------
+if command -v delta &>/dev/null; then
+    git config --global core.pager "delta"
+    git config --global interactive.diffFilter "delta --color-only"
+    git config --global delta.navigate true
+    git config --global delta.side-by-side true
+    git config --global delta.line-numbers true
+fi
+
+echo "✓ Configured git (preferences, delta if installed)"

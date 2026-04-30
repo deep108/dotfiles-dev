@@ -40,7 +40,7 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 | `run_once_before_03b-install-codex.sh.tmpl` | Install Codex CLI via brew |
 | `run_once_before_04-install-vscode-extensions.sh.tmpl` | Install VS Code extensions (guest only) |
 | `run_onchange_before_05-install-kamal.sh.tmpl` | Configure mise for precompiled Ruby + add Ruby to global mise config + install pinned Kamal as user gem (Linux guest only). Uses `mise use -g` so it preserves existing Java entry from Android setup. |
-| `run_onchange_before_06-configure-git-delta.sh.tmpl` | Configure git to use delta as pager + diff filter |
+| `run_onchange_before_06-configure-git.sh.tmpl` | Configure git: pull.rebase=true, init.defaultBranch=main, merge.conflictStyle=zdiff3, delta as pager (when present). User identity (name/email) is propagated from host by provision-vm.sh, not managed here. |
 
 `run_onchange_` prefix means the script re-runs whenever its contents change (e.g. when adding a brew package or bumping the kamal version pin). `run_once_` runs exactly once per VM.
 
