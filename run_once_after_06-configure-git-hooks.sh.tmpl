@@ -1,0 +1,18 @@
+#!/bin/bash
+# Point the chezmoi source repo (this dotfiles-dev clone) at its committed
+# git hooks, so the gitleaks pre-commit secret scan is active right after a
+# fresh clone — no manual `git config core.hooksPath .githooks` step.
+#
+# Host only: dotfiles are edited and committed on the host, where gitleaks is
+# installed (run_once... brew list). VMs consume dotfiles read-only and carry
+# no gitleaks, so configuring the hook there would only break the occasional
+# in-VM commit with "gitleaks not found".
+set -euo pipefail
+
+{{ if eq .host_type "host" -}}
+SOURCE_DIR="{{ .chezmoi.sourceDir }}"
+if git -C "$SOURCE_DIR" rev-parse --git-dir &>/dev/null; then
+    git -C "$SOURCE_DIR" config core.hooksPath .githooks
+    echo "✓ git hooks configured for dotfiles source ($SOURCE_DIR/.githooks)"
+fi
+{{ end -}}

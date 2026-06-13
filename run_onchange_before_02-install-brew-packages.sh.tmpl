@@ -56,6 +56,12 @@ install_if_missing starship
 install_if_missing tart
 install_if_missing tmux
 install_if_missing git-credential-manager
+# Security / shell dev tooling (host only): gitleaks powers the dotfiles
+# pre-commit secret scan (.githooks/pre-commit, wired by
+# run_once_after_06); shellcheck lints the host-resident vm-tools +
+# dotfiles shell scripts.
+install_if_missing gitleaks
+install_if_missing shellcheck
 install_cask_if_missing "Google Chrome" google-chrome
 install_cask_if_missing "iTerm" iterm2
 install_font_if_missing "MesloLGMDZNerdFont-Regular.ttf" font-meslo-lg-nerd-font
