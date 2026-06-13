@@ -96,3 +96,20 @@ All shell configs and scripts handle both paths via templates or fallback detect
 - chezmoi is installed by bootstrap (not by run_once scripts) — it's in `check-dev-tool-updates` but not in the install scripts
 - Auto-updating tools (Claude Code, Google Chrome, iTerm2) are excluded from `check-dev-tool-updates`
 - Kamal install (`run_onchange_before_05`) is gated on `.chezmoi.os == "linux"` and `.host_type == "guest"` — exits cleanly otherwise. Tart macOS guests can't run Docker so deploys come from Linux guests only.
+
+## Boundary Rule — This Repo Is Public
+
+This repo is **public by construction** and must stay safe to be public:
+
+- It MAY install tools (the kamal/deploy toolchain installs legitimately live here).
+- It must NEVER carry secrets, hostnames/IPs/topology, or any description of
+  the VM/deploy security model. Deploy *tooling* lives here; deploy *knowledge*
+  never does — that belongs in vm-tools (private, host-only) or a private
+  per-project repo.
+- `dot_claude/` is deployed into every guest VM and gravity pulls VM config
+  toward this repo (and `chezmoi re-add` will happily sync back an
+  agent-fattened `~/.claude/CLAUDE.md`) — re-check against this rule on every
+  edit there.
+- Enforced by a gitleaks pre-commit hook: `.githooks/pre-commit`.
+  One-time setup per clone: `git config core.hooksPath .githooks`
+  (requires `brew install gitleaks`).

@@ -1,0 +1,12 @@
+#!/bin/sh
+# Secret scan of staged changes (gitleaks). This repo is public by
+# construction: it may install tools, but must never carry secrets,
+# hostnames/IPs/topology, or any security-model description — that
+# content belongs in vm-tools (private) or a per-project repo.
+#
+# One-time setup per clone:  git config core.hooksPath .githooks
+if ! command -v gitleaks >/dev/null 2>&1; then
+    echo "pre-commit: gitleaks not found — install with: brew install gitleaks" >&2
+    exit 1
+fi
+exec gitleaks git --pre-commit --staged --no-banner --redact .
