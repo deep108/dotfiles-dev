@@ -110,6 +110,7 @@ This repo is **public by construction** and must stay safe to be public:
   toward this repo (and `chezmoi re-add` will happily sync back an
   agent-fattened `~/.claude/CLAUDE.md`) — re-check against this rule on every
   edit there.
-- Enforced by a gitleaks pre-commit hook: `.githooks/pre-commit`.
-  One-time setup per clone: `git config core.hooksPath .githooks`
-  (requires `brew install gitleaks`).
+- Enforced by a gitleaks pre-commit hook: `.githooks/pre-commit`. On the host,
+  `chezmoi apply` wires this automatically — `run_onchange_before_02` installs
+  gitleaks (+ shellcheck), `run_once_after_06` sets `core.hooksPath`. For a bare
+  clone outside chezmoi: `brew install gitleaks && git config core.hooksPath .githooks`.
