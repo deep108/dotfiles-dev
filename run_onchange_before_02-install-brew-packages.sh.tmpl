@@ -62,6 +62,9 @@ install_if_missing git-credential-manager
 # dotfiles shell scripts.
 install_if_missing gitleaks
 install_if_missing shellcheck
+# age: encrypts the host-only dev-secrets backup (vm-tools host/backup-dev-secrets.sh).
+# The guest list already includes age (below) for kamal deploys.
+install_if_missing age
 install_cask_if_missing "Google Chrome" google-chrome
 install_cask_if_missing "iTerm" iterm2
 install_font_if_missing "MesloLGMDZNerdFont-Regular.ttf" font-meslo-lg-nerd-font
