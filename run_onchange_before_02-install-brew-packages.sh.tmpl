@@ -56,6 +56,7 @@ install_if_missing starship
 install_if_missing tart
 install_if_missing tmux
 install_if_missing git-credential-manager
+install_if_missing mise
 # Security / shell dev tooling (host only): gitleaks powers the dotfiles
 # pre-commit secret scan (.githooks/pre-commit, wired by
 # run_once_after_06); shellcheck lints the host-resident vm-tools +
@@ -65,9 +66,34 @@ install_if_missing shellcheck
 # age: encrypts the host-only dev-secrets backup (vm-tools host/backup-dev-secrets.sh).
 # The guest list already includes age (below) for kamal deploys.
 install_if_missing age
+# vm-tools provisioning prerequisites (host/provision-vm.sh):
+#   sshpass  — early-bootstrap password SSH to vanilla VMs (admin:admin)
+#   gptfdisk — sgdisk, macOS VM disk resize (relocates the recovery partition)
+#   caddy    — host-wide editor proxy for serve-web (host/lib/web-proxy.sh)
+# sshpass comes from the already-trusted Cirrus Labs tap (same as tart).
+install_if_missing sshpass cirruslabs/cli/sshpass
+install_if_missing sgdisk gptfdisk
+install_if_missing caddy
 install_cask_if_missing "Google Chrome" google-chrome
 install_cask_if_missing "iTerm" iterm2
 install_font_if_missing "MesloLGMDZNerdFont-Regular.ttf" font-meslo-lg-nerd-font
+# Host language runtimes via mise (policy: mise for runtimes, brew for tools).
+# node LTS for general CLI/tooling; python 3.12 for the Google Cloud SDK.
+mise use -g node@lts python@3.12
+# Google Cloud SDK — official off-brew install (host GAR admin: repos/IAM/cleanup
+# policies). NOT the brew cask: the official tarball keeps the component manager
+# enabled (gke-gcloud-auth-plugin etc.) and tracks Google's channel directly
+# (update via `gcloud components update`, not brew). macOS has no no-sudo bundled
+# python, so gcloud uses the mise python via CLOUDSDK_PYTHON (dot_zprofile.tmpl);
+# install.sh is bootstrapped under that python since it needs 3.10+.
+if [ ! -x "$HOME/google-cloud-sdk/bin/gcloud" ]; then
+    echo "Installing Google Cloud SDK (official)..."
+    curl -fsSL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-darwin-arm.tar.gz \
+        | tar -xz -C "$HOME"
+    CLOUDSDK_PYTHON="$HOME/.local/share/mise/shims/python3" \
+        "$HOME/google-cloud-sdk/install.sh" --quiet --usage-reporting=false \
+        --path-update=false --command-completion=false
+fi
 {{ else -}}
 # Guest packages (formulae)
 install_if_missing mise

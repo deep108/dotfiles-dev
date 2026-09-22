@@ -4,6 +4,20 @@ eval "$(/opt/homebrew/bin/brew shellenv zsh)"
 export ANDROID_HOME="$HOME/Library/Android/sdk"
 [[ -d "$ANDROID_HOME/platform-tools" ]] && export PATH="$ANDROID_HOME/platform-tools:$PATH"
 [[ -d "$ANDROID_HOME/emulator" ]] && export PATH="$ANDROID_HOME/emulator:$PATH"
+{{ else -}}
+# Google Cloud SDK — official off-brew install at ~/google-cloud-sdk (host-only,
+# for GAR admin). macOS has no no-sudo bundled python, so gcloud runs on the
+# mise-managed interpreter (it rejects macOS system Python 3.9). mise is
+# activated in dot_zshrc.tmpl; global python pin in ~/.config/mise/config.toml.
+export CLOUDSDK_PYTHON="$HOME/.local/share/mise/shims/python3"
+[[ -d "$HOME/google-cloud-sdk/bin" ]] && export PATH="$HOME/google-cloud-sdk/bin:$PATH"
+# Host Android SDK (the emulator runs on the host — vm-tools start-android-dev.sh).
+# Guarded: the path may not exist yet on a fresh host.
+export ANDROID_HOME="$HOME/dev/android-sdk"
+[[ -d "$ANDROID_HOME/platform-tools" ]] && export PATH="$ANDROID_HOME/platform-tools:$PATH"
+[[ -d "$ANDROID_HOME/emulator" ]] && export PATH="$ANDROID_HOME/emulator:$PATH"
+# OrbStack CLI integration (host container / Linux-VM tooling)
+source ~/.orbstack/shell/init.zsh 2>/dev/null || :
 {{ end -}}
 {{ else if eq .chezmoi.os "linux" -}}
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
