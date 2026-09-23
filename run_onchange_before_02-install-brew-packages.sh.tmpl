@@ -53,7 +53,15 @@ install_font_if_missing() {
 install_if_missing nvim neovim
 install_if_missing openssl
 install_if_missing starship
-install_if_missing tart
+# Tart moved to OpenAI (2026): openai/tools replaces the frozen cirruslabs/cli
+# tap. Homebrew 7 only loads formulae from trusted taps — trust these two
+# formulae (softnet is tart's dependency), not the whole tap.
+if ! command -v tart &>/dev/null; then
+    brew tap openai/tools
+    brew trust --formula openai/tools/softnet
+    brew trust --formula openai/tools/tart
+fi
+install_if_missing tart openai/tools/tart
 install_if_missing tmux
 install_if_missing git-credential-manager
 install_if_missing mise
@@ -70,8 +78,8 @@ install_if_missing age
 #   sshpass  — early-bootstrap password SSH to vanilla VMs (admin:admin)
 #   gptfdisk — sgdisk, macOS VM disk resize (relocates the recovery partition)
 #   caddy    — host-wide editor proxy for serve-web (host/lib/web-proxy.sh)
-# sshpass comes from the already-trusted Cirrus Labs tap (same as tart).
-install_if_missing sshpass cirruslabs/cli/sshpass
+# sshpass is in homebrew-core (the old cirruslabs/cli copy is frozen).
+install_if_missing sshpass
 install_if_missing sgdisk gptfdisk
 install_if_missing caddy
 install_cask_if_missing "Google Chrome" google-chrome
