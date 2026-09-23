@@ -125,6 +125,21 @@ install_or_upgrade git
 install_or_upgrade rsync
 install_or_upgrade zip
 install_or_upgrade unzip
+# bash 5 (macOS ships 3.2 at /bin/bash) and GNU coreutils (g-prefixed:
+# gdate, greadlink, gstat, ...) — brew-list check, since the system
+# versions satisfy command -v.
+install_or_upgrade bash
+install_or_upgrade coreutils
+# Shell script linting and file watching
+install_if_missing shellcheck
+install_if_missing fswatch
+# Docker CLI only — macOS guests can't run the engine; it drives a paired svc
+# VM's Docker (vm-tools bridge-vm-svc.sh) or any DOCKER_HOST=ssh://.
+# docker-compose is on PATH standalone; `docker compose` (plugin form) also
+# needs /opt/homebrew/lib/docker/cli-plugins in ~/.docker/config.json's
+# cliPluginsExtraDirs.
+install_if_missing docker
+install_if_missing docker-compose
 # Guest packages (casks — macOS only)
 install_cask_if_missing "Visual Studio Code" visual-studio-code
 install_cask_if_missing "iTerm" iterm2
