@@ -47,7 +47,7 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 ### Static Files
 | File | Deployed to | Notes |
 |------|------------|-------|
-| `dot_vscode/data/User/settings.json` | `~/.vscode/data/User/settings.json` | Guest only (via .chezmoiignore) |
+| `private_dot_vscode/data/User/settings.json` (dir 0700 — holds the serve-web token) | `~/.vscode/data/User/settings.json` | Guest only (via .chezmoiignore) |
 | `dot_local/bin/executable_check-dev-tool-updates.tmpl` | `~/.local/bin/check-dev-tool-updates` | Interactive update checker |
 | `dot_codex/symlink_AGENTS.md` | `~/.codex/AGENTS.md` | Symlink to `~/.claude/CLAUDE.md`, guest only |
 | `dot_gemini/symlink_GEMINI.md` | `~/.gemini/GEMINI.md` | Symlink to `~/.claude/CLAUDE.md`, guest only |
