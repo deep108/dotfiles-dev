@@ -142,6 +142,7 @@ install_if_missing docker-compose
 # Guest packages (casks — macOS only)
 install_cask_if_missing "Visual Studio Code" visual-studio-code
 install_cask_if_missing "iTerm" iterm2
+install_cask_if_missing "Google Chrome" google-chrome
 install_font_if_missing "MesloLGMDZNerdFont-Regular.ttf" font-meslo-lg-nerd-font
 {{ end -}}
 {{ else if eq .chezmoi.os "linux" -}}
