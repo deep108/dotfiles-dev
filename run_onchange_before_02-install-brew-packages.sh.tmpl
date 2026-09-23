@@ -135,9 +135,8 @@ install_if_missing shellcheck
 install_if_missing fswatch
 # Docker CLI only — macOS guests can't run the engine; it drives a paired svc
 # VM's Docker (vm-tools bridge-vm-svc.sh) or any DOCKER_HOST=ssh://.
-# docker-compose is on PATH standalone; `docker compose` (plugin form) also
-# needs /opt/homebrew/lib/docker/cli-plugins in ~/.docker/config.json's
-# cliPluginsExtraDirs.
+# docker-compose is on PATH standalone; `docker compose` (plugin form) finds
+# it via cliPluginsExtraDirs, set by run_onchange_after_07-configure-docker.
 install_if_missing docker
 install_if_missing docker-compose
 # Guest packages (casks — macOS only)

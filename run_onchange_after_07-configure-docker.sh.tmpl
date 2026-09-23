@@ -1,0 +1,25 @@
+{{ if and (eq .chezmoi.os "darwin") (eq .host_type "guest") -}}
+#!/bin/zsh
+# Configure the docker CLI (macOS guest): let `docker compose` find brew's
+# compose plugin. Additive merge into ~/.docker/config.json — the file also
+# holds registry auth (auths / credsStore), so chezmoi doesn't own it.
+# Linux guests use the distro's docker packaging; the host uses OrbStack.
+
+set -euo pipefail
+
+PLUGIN_DIR=/opt/homebrew/lib/docker/cli-plugins
+CONFIG="$HOME/.docker/config.json"
+
+command -v jq &>/dev/null || { echo "configure-docker: jq missing — skipped"; exit 0; }
+
+mkdir -p "$HOME/.docker"
+[[ -s "$CONFIG" ]] || echo '{}' > "$CONFIG"
+
+tmp=$(mktemp "$HOME/.docker/config.json.XXXXXX")
+jq --arg d "$PLUGIN_DIR" \
+    '.cliPluginsExtraDirs = ((.cliPluginsExtraDirs // []) + [$d] | unique)' \
+    "$CONFIG" > "$tmp"
+chmod 600 "$tmp"
+mv "$tmp" "$CONFIG"
+echo "✓ docker: cliPluginsExtraDirs includes $PLUGIN_DIR"
+{{ end -}}
