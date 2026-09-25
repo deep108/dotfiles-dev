@@ -27,3 +27,12 @@ export ANDROID_HOME="$HOME/Android/Sdk"
 [[ -d "$ANDROID_HOME/emulator" ]] && export PATH="$ANDROID_HOME/emulator:$PATH"
 {{ end -}}
 {{ end -}}
+{{ if eq .host_type "guest" -}}
+# Raise the open-file limit for this shell and everything it starts. The default
+# soft limit (256 on macOS) is too low for mise's npm installer, which fails on
+# large packages such as firebase-tools with "Too many open files". Only ever
+# raises it; if the hard limit is lower, the limit stays as it was.
+_nofile=$(ulimit -n)
+[[ $_nofile != unlimited ]] && (( _nofile < 10240 )) && ulimit -n 10240 2>/dev/null
+unset _nofile
+{{ end -}}

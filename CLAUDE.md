@@ -24,7 +24,7 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 |------|---------|
 | `.chezmoi.toml.tmpl` | Auto-detect host vs guest, macOS vs Linux |
 | `.chezmoiignore` | Exclude VS Code settings + agent configs from host machines |
-| `dot_zprofile.tmpl` | Login shell: Homebrew shellenv (macOS + Linux paths) |
+| `dot_zprofile.tmpl` | Login shell: Homebrew shellenv (macOS + Linux paths); guests raise the open-file limit to 10240 (mise's npm installer) |
 | `dot_zshrc.tmpl` | Interactive shell: brew, starship, mise (guest only), claude-named helper |
 | `dot_config/starship.toml.tmpl` | Guest: teal powerline badge with VM hostname; Host: default prompt |
 | `dot_claude/settings.json.tmpl` | Claude Code settings with platform-aware homeDir |
