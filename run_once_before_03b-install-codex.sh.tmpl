@@ -1,17 +1,46 @@
 #!/bin/zsh
-# Install OpenAI Codex CLI if not present
+# Install OpenAI Codex CLI if not present, via OpenAI's standalone installer
+# (~/.codex/packages/standalone, linked from ~/.local/bin). Not the brew cask:
+# brew quarantines each cask download, so every upgrade needs a Gatekeeper
+# approval per binary, and `codex update` on a brew install just runs brew.
+# The standalone install updates itself with no quarantine flag.
 
 set -euo pipefail
 
-{{ if eq .chezmoi.os "darwin" -}}
-eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv 2>/dev/null)"
-{{ else if eq .chezmoi.os "linux" -}}
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-{{ end -}}
+# The installer appends a PATH block to ~/.zprofile when ~/.local/bin is not on
+# PATH; dot_zshrc already adds it, so add it here too and leave the profile alone.
+export PATH="$HOME/.local/bin:$PATH"
+manual_install='curl -fsSL https://chatgpt.com/codex/install.sh | PATH="$HOME/.local/bin:$PATH" CODEX_NON_INTERACTIVE=1 sh'
+
+# A machine with the brew cask keeps it; switching is by hand, cask first (the
+# installer also writes that PATH block when it finds a brew codex on PATH).
+# The cask's codex isn't run here: an unapproved copy waits on a Gatekeeper prompt.
+for prefix in /opt/homebrew /usr/local /home/linuxbrew/.linuxbrew; do
+    if [[ -d "$prefix/Caskroom/codex" ]]; then
+        echo "⚠ Codex CLI is the Homebrew cask ($prefix/Caskroom/codex); left as is"
+        echo "  To switch to the standalone installer, quit Codex, then run:"
+        echo "    brew uninstall --cask codex"
+        echo "    $manual_install"
+        exit 0
+    fi
+done
 
 if ! command -v codex &>/dev/null; then
     echo "Installing Codex CLI..."
-    brew install codex
+    installed=false
+    for attempt in 1 2 3; do
+        if curl -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh >/dev/null 2>&1; then
+            installed=true
+            break
+        fi
+        echo "  Attempt $attempt failed — retrying in 5s..."
+        sleep 5
+    done
+    if [[ "$installed" != true ]]; then
+        echo "⚠ Codex CLI install failed after 3 attempts"
+        echo "  Install manually later: $manual_install"
+        exit 0
+    fi
 fi
 
 if command -v codex &>/dev/null; then
@@ -19,5 +48,5 @@ if command -v codex &>/dev/null; then
     echo "✓ Codex CLI ($codex_version)"
 else
     echo "⚠ Codex CLI not available"
-    echo "  Install manually later: brew install codex"
+    echo "  Install manually later: $manual_install"
 fi

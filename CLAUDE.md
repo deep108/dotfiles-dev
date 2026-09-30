@@ -25,7 +25,7 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 | `.chezmoi.toml.tmpl` | Auto-detect host vs guest, macOS vs Linux |
 | `.chezmoiignore` | Exclude VS Code settings + agent configs from host machines |
 | `dot_zprofile.tmpl` | Login shell: Homebrew shellenv (macOS + Linux paths); guests raise the open-file limit to 10240 (mise's npm installer) |
-| `dot_zshrc.tmpl` | Interactive shell: brew, starship, mise (guest only), claude-named helper |
+| `dot_zshrc.tmpl` | Interactive shell: brew, then `~/.local/bin` ahead of it (standalone claude/codex), starship, mise (guest only), claude-named helper |
 | `dot_config/starship.toml.tmpl` | Guest: teal powerline badge with VM hostname; Host: default prompt |
 | `dot_claude/settings.json.tmpl` | Claude Code settings with platform-aware homeDir |
 | `dot_claude/CLAUDE.md` | Shared agent instructions (mise + port 18000), guest only |
@@ -37,7 +37,7 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 | `run_once_before_00-macos-defaults.sh` | Key repeat settings (skips on Linux via `uname` check) |
 | `run_onchange_before_02-install-brew-packages.sh.tmpl` | Install tools via brew (incl. diff tooling, age, kamal toolchain on Linux); VS Code via apt on Linux |
 | `run_once_before_03-install-claude-code.sh` | Install Claude Code CLI |
-| `run_once_before_03b-install-codex.sh.tmpl` | Install Codex CLI via brew |
+| `run_once_before_03b-install-codex.sh.tmpl` | Install Codex CLI via OpenAI's standalone installer (self-updating; the brew cask needs a Gatekeeper approval per binary on every upgrade) |
 | `run_once_before_04-install-vscode-extensions.sh.tmpl` | Install VS Code extensions (guest only) |
 | `run_onchange_before_05-install-kamal.sh.tmpl` | Configure mise for precompiled Ruby + add Ruby to global mise config + install pinned Kamal as user gem (Linux guest only). Uses `mise use -g` so it preserves existing Java entry from Android setup. |
 | `run_onchange_before_06-configure-git.sh.tmpl` | Configure git: pull.rebase=true, init.defaultBranch=main, merge.conflictStyle=zdiff3, delta as pager (when present). User identity (name/email) is propagated from host by provision-vm.sh, not managed here. |
@@ -94,7 +94,8 @@ All shell configs and scripts handle both paths via templates or fallback detect
 - `run_onchange_before_02` uses `install_or_upgrade` (checks `brew list` not `command -v`) for brew-over-OS tools so brew version gets installed even when OS version exists
 - mise global config (`~/.config/mise/config.toml`) is NOT chezmoi-managed — chezmoi would clobber whatever's already there (e.g. Java from Android setup). Mise mutations are done via the `mise use -g` and `mise settings set` CLI commands (in `run_onchange_before_05`), which are additive.
 - chezmoi is installed by bootstrap (not by run_once scripts) — it's in `check-dev-tool-updates` but not in the install scripts
-- Auto-updating tools (Claude Code, Google Chrome, iTerm2) are excluded from `check-dev-tool-updates`
+- Auto-updating tools (Claude Code, Codex, Google Chrome, iTerm2) are excluded from `check-dev-tool-updates`
+- A machine that already has the Codex brew cask keeps it: `run_once_before_03b` only prints the steps to switch (quit Codex, `brew uninstall --cask codex`, then the installer with `~/.local/bin` on PATH). Cask first: OpenAI's installer appends a PATH block to the shell profile, which chezmoi manages, when `~/.local/bin` isn't on PATH or it finds another codex there
 - Kamal install (`run_onchange_before_05`) is gated on `.chezmoi.os == "linux"` and `.host_type == "guest"` — exits cleanly otherwise. Tart macOS guests can't run Docker so deploys come from Linux guests only.
 
 ## Boundary Rule — This Repo Is Public
