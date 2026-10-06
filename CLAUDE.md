@@ -51,7 +51,6 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 | `dot_local/bin/executable_check-dev-tool-updates.tmpl` | `~/.local/bin/check-dev-tool-updates` | Interactive update checker |
 | `dot_codex/symlink_AGENTS.md` | `~/.codex/AGENTS.md` | Symlink to `~/.claude/CLAUDE.md`, guest only |
 | `dot_gemini/symlink_GEMINI.md` | `~/.gemini/GEMINI.md` | Symlink to `~/.claude/CLAUDE.md`, guest only |
-| `dot_config/tmux/tmux.conf` | `~/.config/tmux/tmux.conf` | Guest only. Hooks that rename sessions tmux 3.7 lets through but `-t` can't address (`.`, `:`, `#`, empty), as tmux 3.6 did; vm-tools refuses such names |
 
 ## Package Lists
 
