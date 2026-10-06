@@ -6,4 +6,5 @@ README.md
 .claude/rules
 .codex
 .gemini
+.config/tmux
 {{ end }}
