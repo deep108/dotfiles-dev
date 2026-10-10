@@ -55,7 +55,7 @@ Templates branch on `.chezmoi.os` (`darwin` / `linux`) and `.host_type` (`host` 
 ## Package Lists
 
 ### Brew Formulae (both macOS and Linux guests)
-mise, starship, tmux, neovim, jq, wget, tree, htop, watch, git-delta, tig, difftastic, age
+mise, starship, tmux, neovim, jq, ripgrep, wget, tree, htop, watch, git-delta, tig, difftastic, age
 
 ### Brew Formulae (Linux guests only — Kamal toolchain)
 docker, docker-buildx
