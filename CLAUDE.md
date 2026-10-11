@@ -67,7 +67,7 @@ curl, openssl, git, rsync, zip, unzip
 Visual Studio Code, iTerm2, font-meslo-lg-nerd-font
 
 ### Brew Formulae (macOS host only)
-neovim, openssl, starship, tart, tmux, git-credential-manager
+neovim, openssl, starship, tart, tmux, ripgrep, git-credential-manager
 
 ### Brew Casks (macOS host only)
 Google Chrome, iTerm2, font-meslo-lg-nerd-font
